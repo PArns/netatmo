@@ -1160,7 +1160,7 @@ netatmo.prototype.getCameraPicture = function (options, callback) {
  */
 netatmo.prototype.addWebHook = function (callbackUrl, callback) {
     // Wait until authenticated.
-    if (!access_token) {
+    if (!this.access_token) {
         return this.on('authenticated', function () {
             this.addWebHook(callbackUrl, callback);
         });
@@ -1174,9 +1174,9 @@ netatmo.prototype.addWebHook = function (callbackUrl, callback) {
     var url = util.format('%s/api/addwebhook', BASE_URL);
 
     var qs = {
-        access_token: access_token,
+        access_token: this.access_token,
         url: callbackUrl,
-        app_types: "app_security",
+        app_type: "app_security",
     };
 
     request({
@@ -1186,6 +1186,7 @@ netatmo.prototype.addWebHook = function (callbackUrl, callback) {
         encoding: null,
     }, function (err, response, body) {
         if (err || response.statusCode != 200) {
+            return callback(err, body, qs);
             return this.handleRequestError(err, response, body, "addWebHook error");
         }
 
@@ -1208,7 +1209,7 @@ netatmo.prototype.addWebHook = function (callbackUrl, callback) {
  */
 netatmo.prototype.dropWebHook = function (callback) {
     // Wait until authenticated.
-    if (!access_token) {
+    if (!this.access_token) {
         return this.on('authenticated', function () {
             this.dropWebHook(callback);
         });
@@ -1217,8 +1218,8 @@ netatmo.prototype.dropWebHook = function (callback) {
     var url = util.format('%s/api/dropwebhook', BASE_URL);
 
     var qs = {
-        access_token: access_token,
-        app_types: "app_security",
+        access_token: this.access_token,
+        app_type: "app_security",
     };
 
     request({
