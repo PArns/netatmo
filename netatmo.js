@@ -866,4 +866,94 @@ netatmo.prototype.getCameraPicture = function (options, callback) {
   return this;
 };
 
+/**
+ * https://dev.netatmo.com/dev/resources/technical/reference/cameras/addwebhook
+ * @param callbackUrl
+ * @param callback
+ * @returns {*}
+ */
+netatmo.prototype.addWebHook = function (callbackUrl, callback) {
+    // Wait until authenticated.
+    if (!access_token) {
+        return this.on('authenticated', function () {
+            this.addWebHook(callbackUrl, callback);
+        });
+    }
+
+    if (!callbackUrl) {
+        this.emit("error", new Error("getCameraPicture 'callbackUrl' not set."));
+        return this;
+    }
+
+    var url = util.format('%s/api/addwebhook', BASE_URL);
+
+    var qs = {
+        access_token: access_token,
+        url: callbackUrl,
+        app_types: "app_security",
+    };
+
+    request({
+        url: url,
+        method: "GET",
+        qs: qs,
+        encoding: null,
+    }, function (err, response, body) {
+        if (err || response.statusCode != 200) {
+            return this.handleRequestError(err, response, body, "addWebHook error");
+        }
+
+        if (callback) {
+            return callback(err, body);
+        }
+
+        return this;
+
+    }.bind(this));
+
+    return this;
+};
+
+/**
+ * https://dev.netatmo.com/dev/resources/technical/reference/cameras/dropwebhook
+ * @param callbackUrl
+ * @param callback
+ * @returns {*}
+ */
+netatmo.prototype.dropWebHook = function (callback) {
+    // Wait until authenticated.
+    if (!access_token) {
+        return this.on('authenticated', function () {
+            this.dropWebHook(callback);
+        });
+    }
+
+    var url = util.format('%s/api/dropwebhook', BASE_URL);
+
+    var qs = {
+        access_token: access_token,
+        app_types: "app_security",
+    };
+
+    request({
+        url: url,
+        method: "GET",
+        qs: qs,
+        encoding: null,
+    }, function (err, response, body) {
+        if (err || response.statusCode != 200) {
+            return this.handleRequestError(err, response, body, "dropWebHook error");
+        }
+
+        if (callback) {
+            return callback(err, body);
+        }
+
+        return this;
+
+    }.bind(this));
+
+    return this;
+};
+
 module.exports = netatmo;
