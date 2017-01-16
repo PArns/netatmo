@@ -1166,18 +1166,15 @@ netatmo.prototype.addWebHook = function (callbackUrl, callback) {
         });
     }
 
-    if (!callbackUrl) {
-        this.emit("error", new Error("getCameraPicture 'callbackUrl' not set."));
-        return this;
-    }
-
     var url = util.format('%s/api/addwebhook', BASE_URL);
 
     var qs = {
         access_token: this.access_token,
-        url: callbackUrl,
-        app_type: "app_security",
+        app_type: "app_security"
     };
+
+    if (callbackUrl)
+        qs.url = callbackUrl;
 
     request({
         url: url,
