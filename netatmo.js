@@ -1241,12 +1241,12 @@ netatmo.prototype.dropWebHook = function (callback) {
 
 /**
  * https://dev.netatmo.com/dev/resources/technical/reference/cameras/setpersonsaway
- * @param callback
  * @param homeId
- * @param personId
+ * @param personsId
+ * @param callback
  * @returns {*}
  */
-netatmo.prototype.setPersonsAway = function (callback, homeId, personsId) {
+netatmo.prototype.setPersonsAway = function (homeId, personsId, callback) {
     // Wait until authenticated.
     if (!this.access_token) {
         return this.on('authenticated', function () {
