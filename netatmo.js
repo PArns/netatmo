@@ -11,7 +11,7 @@ var BASE_URL = 'https://api.netatmo.net';
  */
 var netatmo = function (args) {
     EventEmitter.call(this);
-    if(args) {
+    if (args) {
         this.authenticate(args);
     }
 };
@@ -33,7 +33,7 @@ netatmo.prototype.handleRequestError = function (err, response, body, message, c
     var errorMessage = "";
     if (body && response.headers['content-type'].indexOf('application/json') !== -1) {
         errorMessage = JSON.parse(body);
-        if(this.refresh_token && errorMessage.error && (errorMessage.error.code === 2 || errorMessage.error.code === 3)){
+        if (this.refresh_token && errorMessage.error && (errorMessage.error.code === 2 || errorMessage.error.code === 3)) {
             //authConstants token is expired, refresh it and retry
             return this.authenticate_refresh(this.refresh_token, retry);
         }
@@ -49,7 +49,7 @@ netatmo.prototype.handleRequestError = function (err, response, body, message, c
     } else {
         this.emit("warning", error);
     }
-    if(callback){
+    if (callback) {
         return callback(error);
     }
     return error;
@@ -94,7 +94,7 @@ netatmo.prototype.authenticate = function (args, callback) {
 
     var form = {};
 
-    if(args.code) {
+    if (args.code) {
         if (!args.redirect_uri) {
             this.emit("error", new Error("Authenticate 'code' set but 'redirectUri' not set."));
             return this;
@@ -244,13 +244,13 @@ netatmo.prototype.getUser = function (callback) {
     }
 
     var url;
-    if(this.scope.indexOf('read_station') !== -1){
+    if (this.scope.indexOf('read_station') !== -1) {
         url = util.format('%s/api/getstationsdata', BASE_URL);
-    }else if(this.scope.indexOf('read_thermostat') !== -1){
+    } else if (this.scope.indexOf('read_thermostat') !== -1) {
         url = util.format('%s/api/getthermostatsdata', BASE_URL);
-    }else if(this.scope.indexOf('read_camera') !== -1){
+    } else if (this.scope.indexOf('read_camera') !== -1) {
         url = util.format('%s/api/gethomedata', BASE_URL);
-    }else{
+    } else {
         this.emit('error', new Error('You do not have permission to get user data!'));
     }
 
@@ -628,7 +628,7 @@ netatmo.prototype.getThermstate = function (options, callback) {
     return this;
 };
 
-netatmo.prototype.switchSchedule = function(options, callback) {
+netatmo.prototype.switchSchedule = function (options, callback) {
     // Wait until authenticated.
     if (!this.access_token) {
         return this.on('authenticated', function () {
@@ -1200,7 +1200,6 @@ netatmo.prototype.addWebHook = function (callbackUrl, callback) {
 
 /**
  * https://dev.netatmo.com/dev/resources/technical/reference/cameras/dropwebhook
- * @param callbackUrl
  * @param callback
  * @returns {*}
  */
@@ -1227,6 +1226,52 @@ netatmo.prototype.dropWebHook = function (callback) {
     }, function (err, response, body) {
         if (err || response.statusCode != 200) {
             return this.handleRequestError(err, response, body, "dropWebHook error");
+        }
+
+        if (callback) {
+            return callback(err, body);
+        }
+
+        return this;
+
+    }.bind(this));
+
+    return this;
+};
+
+/**
+ * https://dev.netatmo.com/dev/resources/technical/reference/cameras/setpersonsaway
+ * @param callback
+ * @param homeId
+ * @param personId
+ * @returns {*}
+ */
+netatmo.prototype.setPersonsAway = function (callback, homeId, personsId) {
+    // Wait until authenticated.
+    if (!this.access_token) {
+        return this.on('authenticated', function () {
+            this.dropWebHook(callback);
+        });
+    }
+
+    var url = util.format('%s/api/setpersonsaway', BASE_URL);
+
+    var qs = {
+        access_token: this.access_token,
+        home_id: homeId
+    };
+
+    if (personsId)
+        qs.person_id = personsId;
+
+    request({
+        url: url,
+        method: "GET",
+        qs: qs,
+        encoding: null,
+    }, function (err, response, body) {
+        if (err || response.statusCode != 200) {
+            return this.handleRequestError(err, response, body, "setPersonsAway error");
         }
 
         if (callback) {
